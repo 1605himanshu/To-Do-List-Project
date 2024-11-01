@@ -7,10 +7,16 @@ app.use(express.static('public'));
 app.use(express.urlencoded({extended:true}));
 
 const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost:27017/todo");
-const trySchema = new mongoose.Schema({
-    name:String
+const MONGODB_URI = process.env.MONGODB_URI; // Use the environment variable
+
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+.then(() => {
+    console.log("Connected to MongoDB");
+})
+.catch(err => {
+    console.error("MongoDB connection error:", err);
 });
+
 const item = mongoose.model("task",trySchema);
 //const todo = new item({
   //  name:"create some videos"
