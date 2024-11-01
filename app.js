@@ -1,35 +1,27 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const app = express();
 
-// Define your schema here (example schema)
+// Set up the view engine and static files
+app.set("view engine", "ejs");
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+
+// Connect to MongoDB using environment variables
+const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/todo";
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Define the schema and model
 const trySchema = new mongoose.Schema({
     name: String
 });
+const Item = mongoose.model("Task", trySchema);
 
-// Initialize Express app
-const app = express();
-app.set("view engine", "ejs");
-app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
-
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI; // Use the environment variable
-
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-        console.log("Connected to MongoDB");
-    })
-    .catch(err => {
-        console.error("MongoDB connection error:", err);
-    });
-
-const item = mongoose.model("task", trySchema);
-
-// Routes
-app.get("/", async (req, res) => {
+// Home route
+app.get("/", async function(req, res) {
     try {
-        const foundItems = await item.find({});
+        const foundItems = await Item.find({});
         res.render("list", { ejes: foundItems.length ? foundItems : [] });
     } catch (err) {
         console.error(err);
@@ -37,24 +29,28 @@ app.get("/", async (req, res) => {
     }
 });
 
-app.post("/", async (req, res) => {
+// Add new item
+app.post("/", async function(req, res) {
     const itemName = req.body.e1e1;
-    const todo5 = new item({ name: itemName });
+    const newItem = new Item({
+        name: itemName
+    });
 
     try {
-        await todo5.save();
+        await newItem.save();
         res.redirect("/");
     } catch (err) {
-        console.error("Error saving item:", err);
+        console.error("Error saving item: ", err);
         res.status(500).send("Error saving item.");
     }
 });
 
-app.post("/delete", async (req, res) => {
-    const checked = req.body.checkbox1;
-
+// Delete item
+app.post("/delete", async function(req, res) {
+    const checkedId = req.body.checkbox1;
+    
     try {
-        await item.findByIdAndDelete(checked);
+        await Item.findByIdAndDelete(checkedId);
         console.log("Item deleted successfully.");
         res.redirect("/");
     } catch (err) {
@@ -63,8 +59,9 @@ app.post("/delete", async (req, res) => {
     }
 });
 
-// Start the server on the specified port
+// Listen on the specified PORT or 2000 for local development
 const PORT = process.env.PORT || 2000;
-app.listen(PORT, () => {
+app.listen(PORT, function() {
     console.log(`Server started on port ${PORT}`);
 });
+
