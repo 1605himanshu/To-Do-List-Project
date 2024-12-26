@@ -7,7 +7,7 @@ app.use(express.static('public'));
 app.use(express.urlencoded({extended:true}));
 
 const mongoose = require("mongoose");
-mongoose.connect("imhimanshu1605:himan1605@ecommerce.yzew5.mongodb.net/");
+mongoose.connect("mongodb+srv://todolist:todo1605@cluster0.nlo36.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
 const trySchema = new mongoose.Schema({
     name:String
 });
